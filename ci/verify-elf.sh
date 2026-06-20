@@ -10,7 +10,7 @@ if [[ ! -x "$READELF" ]]; then
   exit 1
 fi
 
-SO="$ROOT/zygisk/libs/arm64-v8a/libsystemui_media_fix.so"
+SO="$ROOT/zygisk/libs/arm64-v8a/libadb_spoofer.so"
 [[ -f "$SO" ]] || { echo "Missing library: $SO" >&2; exit 1; }
 [[ ! -e "$ROOT/zygisk/libs/armeabi-v7a" ]] || {
   echo "Unexpected 32-bit build output detected" >&2
