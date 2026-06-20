@@ -2,7 +2,15 @@
 set -e
 
 echo "Building Zygisk module..."
-ndk-build -C zygisk/jni -j$(nproc)
+
+NDK_BUILD="ndk-build"
+if [ -n "$ANDROID_NDK_HOME" ]; then
+    NDK_BUILD="$ANDROID_NDK_HOME/ndk-build"
+elif [ -n "$ANDROID_NDK_ROOT" ]; then
+    NDK_BUILD="$ANDROID_NDK_ROOT/ndk-build"
+fi
+
+"$NDK_BUILD" -C zygisk/jni -j$(nproc)
 
 echo "Packaging..."
 rm -rf out zygisk_adb_spoofer.zip

@@ -1,7 +1,15 @@
 $ErrorActionPreference = "Stop"
 
 Write-Host "Building Zygisk module..." -ForegroundColor Cyan
-ndk-build.cmd -C zygisk/jni -j$env:NUMBER_OF_PROCESSORS
+
+$NdkBuild = "ndk-build.cmd"
+if (-not [string]::IsNullOrWhiteSpace($env:ANDROID_NDK_HOME)) {
+    $NdkBuild = Join-Path $env:ANDROID_NDK_HOME "ndk-build.cmd"
+} elseif (-not [string]::IsNullOrWhiteSpace($env:ANDROID_NDK_ROOT)) {
+    $NdkBuild = Join-Path $env:ANDROID_NDK_ROOT "ndk-build.cmd"
+}
+
+& $NdkBuild -C zygisk/jni -j$env:NUMBER_OF_PROCESSORS
 
 Write-Host "Packaging..." -ForegroundColor Cyan
 if (Test-Path "out") { Remove-Item -Recurse -Force "out" }
