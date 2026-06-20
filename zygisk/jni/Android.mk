@@ -5,7 +5,7 @@ LOCAL_MODULE := adb_spoofer
 LOCAL_SRC_FILES := module.cpp utils.cpp
 LOCAL_CPPFLAGS := \
     -std=c++20 \
-    -O3 \
+    -O2 \
     -flto=thin \
     -DNDEBUG \
     -D_FORTIFY_SOURCE=2 \
