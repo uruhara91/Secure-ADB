@@ -1,11 +1,11 @@
 LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := systemui_media_fix
-LOCAL_SRC_FILES := module.cpp binder.cpp
+LOCAL_MODULE := adb_spoofer
+LOCAL_SRC_FILES := module.cpp utils.cpp
 LOCAL_CPPFLAGS := \
     -std=c++20 \
-    -O2 \
+    -O3 \
     -flto=thin \
     -DNDEBUG \
     -D_FORTIFY_SOURCE=2 \

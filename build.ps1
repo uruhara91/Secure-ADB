@@ -1,56 +1,17 @@
-param(
-    [string]$NdkPath = $env:ANDROID_NDK_HOME,
-    [switch]$NoClean
-)
+$ErrorActionPreference = "Stop"
 
-$ErrorActionPreference = 'Stop'
-$Root = Split-Path -Parent $MyInvocation.MyCommand.Path
-$ZygiskDir = Join-Path $Root 'zygisk'
-$ModuleDir = Join-Path $Root 'module'
-$ModuleProp = Join-Path $ModuleDir 'module.prop'
-$OutputDir = Join-Path $Root 'dist'
-$ModuleZygiskDir = Join-Path $ModuleDir 'zygisk'
+Write-Host "Building Zygisk module..." -ForegroundColor Cyan
+ndk-build.cmd -C zygisk/jni -j$env:NUMBER_OF_PROCESSORS
 
-$VersionLine = Get-Content $ModuleProp | Where-Object { $_ -like 'version=*' } | Select-Object -First 1
-if ([string]::IsNullOrWhiteSpace($VersionLine)) {
-    throw "Could not read version from $ModuleProp"
-}
-$Version = $VersionLine.Substring('version='.Length).Trim()
+Write-Host "Packaging..." -ForegroundColor Cyan
+if (Test-Path "out") { Remove-Item -Recurse -Force "out" }
+if (Test-Path "zygisk_adb_spoofer.zip") { Remove-Item -Force "zygisk_adb_spoofer.zip" }
 
-if ([string]::IsNullOrWhiteSpace($NdkPath)) {
-    $NdkPath = $env:ANDROID_NDK_ROOT
-}
-if ([string]::IsNullOrWhiteSpace($NdkPath)) {
-    throw 'Set ANDROID_NDK_HOME or pass -NdkPath C:\path\to\ndk.'
-}
+New-Item -ItemType Directory -Force -Path "out/zygisk" | Out-Null
 
-$NdkBuild = Join-Path $NdkPath 'ndk-build.cmd'
-if (-not (Test-Path $NdkBuild)) {
-    $NdkBuild = Join-Path $NdkPath 'ndk-build'
-}
-if (-not (Test-Path $NdkBuild)) {
-    throw "ndk-build was not found under $NdkPath"
-}
+Copy-Item -Recurse -Force "module/*" "out/"
+Copy-Item -Force "zygisk/libs/arm64-v8a/libadb_spoofer.so" "out/zygisk/arm64-v8a.so"
 
-if (-not $NoClean) {
-    & $NdkBuild '-C' $ZygiskDir 'clean'
-    if ($LASTEXITCODE -ne 0) { throw "ndk-build clean failed: $LASTEXITCODE" }
-}
+Compress-Archive -Path "out/*" -DestinationPath "zygisk_adb_spoofer.zip" -Force
 
-$Jobs = [Math]::Max(1, [Environment]::ProcessorCount)
-& $NdkBuild '-C' $ZygiskDir "-j$Jobs"
-if ($LASTEXITCODE -ne 0) { throw "ndk-build failed: $LASTEXITCODE" }
-
-Remove-Item $ModuleZygiskDir -Recurse -Force -ErrorAction SilentlyContinue
-New-Item $ModuleZygiskDir -ItemType Directory -Force | Out-Null
-
-$Source = Join-Path $ZygiskDir 'libs\arm64-v8a\libsystemui_media_fix.so'
-if (-not (Test-Path $Source)) { throw "Missing compiled library: $Source" }
-Copy-Item $Source (Join-Path $ModuleZygiskDir 'arm64-v8a.so') -Force
-
-New-Item $OutputDir -ItemType Directory -Force | Out-Null
-$ZipPath = Join-Path $OutputDir "SystemUI-Media-Fix-$Version.zip"
-Remove-Item $ZipPath -Force -ErrorAction SilentlyContinue
-Compress-Archive -Path (Join-Path $ModuleDir '*') -DestinationPath $ZipPath -CompressionLevel Optimal
-
-Write-Host "Built module: $ZipPath"
+Write-Host "Done! -> zygisk_adb_spoofer.zip" -ForegroundColor Green

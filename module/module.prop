@@ -1,6 +1,6 @@
-id=systemui_media_fix
-name=SystemUI MediaMetadata NPE Fix
-version=v6.9
-versionCode=69
+id=zygisk_adb_spoofer
+name=zygisk adb spoofer
+version=v1.0
+versionCode=1
 author=uruhara91
-description=Final-firmware arm64-only Zygisk workaround for the null MediaMetadata crash in TranSystemUI 12.0.2.187 on Infinix X6815B firmware 231020V486.
+description=A Zygisk module to spoof sys.usb.config and persist.sys.usb.config to bypass some checks
